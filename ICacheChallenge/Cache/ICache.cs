@@ -1,4 +1,4 @@
-﻿namespace ICacheChallenge
+﻿namespace ICacheChallenge.Cache
 {
     public interface ICache<TKey, TValue>
     {

@@ -1,5 +1,11 @@
-﻿namespace ICacheChallenge
+﻿namespace ICacheChallenge.Domain
 {
+    /// <summary>
+    /// A Node to be used within the ICache Dictionary.
+    /// This was used over LinkListNode for a little additional flexibility.
+    /// </summary>
+    /// <typeparam name="TNodeKey">The Type of the Cache Key</typeparam>
+    /// <typeparam name="TNodeValue">The Type of the Cache Value</typeparam>
     public class Node<TNodeKey, TNodeValue>
     {
         public Node<TNodeKey, TNodeValue> Previous { get; set; }

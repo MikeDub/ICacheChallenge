@@ -1,49 +1,64 @@
-Slick Cache (ICacheChallenge)
+Slick Cache (ICache<TKey, TValue>)
 =========
 
-In-memory, least recently used cache inspired by Fone Dynamics which implements the ICache<TKey, TValue> interface.
-
+In-memory, least recently used cache which implements the ICache<TKey, TValue> interface.
+Unit tests have been provided in a seperate project with 100% coverage, all passing.
 
 ### Motivation
 
 A Cache designed to handle frequently accessed data in a large database.
 It was decided that an in-memory cache within the application itself would help speed up the application and reduce load on the database. 
-Methods have been implements in a thread safe manner to handle large volumes of transactions.
+Methods have been implemented in a thread safe manner to handle large volumes of transactions.
 
 ### Usage
+For all demonstrations, we will assume the use of the `int` type for TKey and `string` type for TValue.
 
++ **Cache Instantiation**:
 ```
-int maxCapacity = 2;
-SlickCache cache = new SlickCache<int, string>(maxCapacity);
+// Simple Instantiation
+int maxCacheSize = 3;
+ICache<int, string> cache = new SlickCache<int, string>(maxCacheSize);
 
-// Can be any type of key / value specified when constructing the cache
+// Instantiation with a specified eviction policy
+ICacheEvictionPolicy evictionPolicy = new MaxCacheSizeEvictionPolicy(maxCacheSize);
+ICache<int, string> cache = new SlickCache<int, string>(null, evictionPolicy);
+
+// If you use both, the eviction policy configuration will take priority
+ICache<int, string> cache = new SlickCache<int, string>(2, evictionPolicy);
+```
+The above code will still result in the Cache having a maxSize of 3, if the the eviction policy is not null. 
+However if the policy were null or not able to be resolved, it would fallback to the parameter -> maxSize = 2.
+
++ **Adding or Updating a Value in the Cache**:
+```
+// Define a key and value you wish to store in the cache
 int index = 1;
 string value = "A"; 
 
 // To Insert a value / or update in the cache:
 cache.AddOrUpdate(index, value);
+```
+If the key exists in the cache, it will simply be updated with the new value.
+However, it if doesn't the new key/pair will be inserted and in accordance the least recently / most recently used values will be updated.
 
-// To retrieve a value from the cache:
-// Define variable to store value to get from the cache
-string value; 
++ **Retrieving a Value from the Cache**:
+```
+int key = 1;
+// To retrieve a value from the cache, define variable to store value to get from the cache
+string value = String.Empty; 
 
 // The retrieval method returns if it was successful or not and outputs the value into the output parameter.
-bool getSuccessful = cache.TryGetValue(0, out value);
-
+bool getSuccessful = cache.TryGetValue(key, out value);
 ```
-
 
 ### Fields / Properties
 
 The following fields / properties are used in the underlying functionality of the Cache:
 
-- `maxCapacity`: The maximum size of the cache, passed into the constructor. If this capacity is reached, it removes the oldest member (current eviction policy).
-- `Exceptions`: Keeps track of any exceptions encountered while performing operations. For the moment this is just implemented as a single / line-broken string.
+- `maxSize`: The maximum size of the cache, passed into the constructor. If this capacity is reached, it removes the oldest member (current eviction policy).
+- `evictionPolicy`: The selected type of eviction policy you wish to use. This policy can be changed at any time by passing in a different eviction policy. By Default, the MaxCacheSizeEvictionPolicy is used with the maxSize parameter passed into the cache constructor. This max size can also be overridden by passing in an instance to the cache constructor with a different max size.
 
 
-### Future enhancements
+### Future Considerations
 
-- Implement tests to test out multi-threading / spinlock functionality
-- Instead of passing in maxCapacity to the cache constructor, introduce a ICacheEvictionPolicy which takes this argument.
-  This will allow greater flexibility in the event the policy is slightly modified,
-  by allowing different policies to be introduced without touching the cache.
+If there comes a time where the eviction policy size grows or additional evicition policies are intoduced, policy tests should be moved to a seperate file.
